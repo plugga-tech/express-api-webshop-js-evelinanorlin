@@ -40,7 +40,6 @@ router.post('/add', async (req, res, next) => {
     let cryptPass = CryptoJS.AES.encrypt(newUser.password, process.env.SALT_KEY).toString();
     let user = {name, email, "password": cryptPass};
     const addUser = await UserModel.create(user);
-    console.log(addUser)
     await addUser.save()
 
     res.status(201).json('created new user');
@@ -74,7 +73,7 @@ router.post('/login', async function(req, res, next) {
       res.status(200).json('log in successfull')
       return
     } else{
-      res.status(406).json('wrong password')
+      res.status(401).json('wrong password')
       return
     }
   } else{
