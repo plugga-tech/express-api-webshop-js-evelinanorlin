@@ -5,14 +5,20 @@ var router = express.Router();
 const ProductModel = require('../models/products-model');
 
 /* GET users listing. */
-router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
-  // HÄMTA ALLA PRODUKTER
+router.get('/', async function(req, res, next) {
+  const products = await ProductModel.find()
+  res.status(200).json(products);
 });
 
-router.get('/:id', function(req, res, next) {
-  res.send('respond with a resource');
-  // ID PÅ PRODUKT
+router.get('/:id', async function(req, res, next) {
+  try{
+    let id = req.params.id;
+    console.log(id)
+    const product = await ProductModel.findById(id);
+    res.status(200).json(product);
+  } catch{
+    res.status(400).json('something went wrong');   
+  }
 });
 
 router.post('/add', function(req, res, next) {

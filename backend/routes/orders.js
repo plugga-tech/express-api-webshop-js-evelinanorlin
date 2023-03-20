@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+const OrderModel = require('../models/orders-model');
 
 /* GET users listing. */
 router.get('/all', function(req, res, next) {
@@ -8,7 +9,17 @@ router.get('/all', function(req, res, next) {
 });
 
 router.post('/add', function(req, res, next) {
-  res.send('respond with a resource');
+  try{
+    let order = new OrderModel({
+      "user": req.body.user,
+      "products": req.body.products,
+    })
+    console.log(order)
+    res.send(order)
+  } catch{
+    res.send('error')
+  }
+
   // SKAPA ORDER FÖR EN SPECIFIK USER 
   // PRODUCTS ÄR EN ARRAY MOTSVARANDE INNEHÅLLET I KUNDVAGN
   // {
