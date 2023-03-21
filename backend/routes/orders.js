@@ -2,6 +2,7 @@ var express = require('express');
 require('dotenv').config();
 var router = express.Router();
 const OrderModel = require('../models/orders-model');
+const ProductModel = require('../models/products-model');
 
 /* GET users listing. */
 router.get('/all/:token', async function(req, res, next) {
@@ -22,33 +23,36 @@ router.get('/all/:token', async function(req, res, next) {
 
 router.post('/add', async function(req, res, next) {
   try{
-    let order = new OrderModel({
-      "user": req.body.user,
-      "products": req.body.products,
-    })
-    await order.save()
-    res.status(200).json(order)
+    let productsList = req.body.products;
+    let soldOutArr = [];
+    
+  await Promise.all(productsList.map(async product => {
+ 
+       let currentProduct = await ProductModel.findById(product.productId);
+ 
+       currentProduct.lager = currentProduct.lager - product.quantity;
+ 
+       if(currentProduct.lager < 1){
+          soldOutArr.push(product.productId);
+         return
+       }
+         await currentProduct.save();
+     }))
 
-  } catch{
+     if(soldOutArr.length > 0){
+      res.status(400).json(`There are not enogh in store of the following products: ${soldOutArr}`);
+      return
+     } else{
+       let order = new OrderModel({
+         "user": req.body.user,
+         "products": req.body.products,
+       })
+       await order.save()
+       res.status(200).json(order)
+     }
+  }catch{
     res.send('error')
   }
-
-  // SKAPA ORDER FÖR EN SPECIFIK USER 
-  // PRODUCTS ÄR EN ARRAY MOTSVARANDE INNEHÅLLET I KUNDVAGN
-  // {
-//   "user": "{{getUsers.response.body.$[0].id}}",
-//   "products": [
-// {
-//   "productId": "// ID PÅ EN PRODUKT",
-//   "quantity": 1
-// },
-// {
-//   "productId": "// ID PÅ EN PRODUKT",
-//   "quantity": 2
-// }
-// ]
-// }
-
 });
 
 router.post('/user', async function(req, res){
