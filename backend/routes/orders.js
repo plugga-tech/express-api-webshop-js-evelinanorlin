@@ -59,7 +59,9 @@ router.post('/user', async function(req, res){
   // HÄMTA ORDERS FÖR EN USER // SKALL MISSLYCKAS = INGEN KEY  // SVARA MED 401
   try{
     if(req.body.token === process.env.TOKEN){
-      let userOrder = await OrderModel.findById(req.body.user);
+      let userOrder = await OrderModel.find({"user": req.body.user});
+      console.log(userOrder)
+
       res.status(200).json(userOrder);
       return
 
