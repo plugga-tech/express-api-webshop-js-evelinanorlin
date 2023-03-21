@@ -29,7 +29,9 @@ router.post('/add', function(req, res, next) {
         "name": newProduct.name,
         "description": newProduct.description,
         "price": newProduct.price,
-        "lager": newProduct.lager
+        "lager": newProduct.lager,
+        "category": newProduct.category,
+        "token": newProduct.token,
       })
 
     product.save()
@@ -42,6 +44,7 @@ router.post('/add', function(req, res, next) {
 
   // SKAPA PRODUKT
   //kommer name, description, price, lager
+  // SKAPA PRODUKT // UTAN TOKEN SÅ SKALL ANROPET MISSLYCKAS = 401
   
 });
 

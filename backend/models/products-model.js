@@ -17,6 +17,14 @@ const ProductsSchema = mongoose.Schema({
   lager: {
     type: Number,
     required: true
+  },
+  category: {
+    type: String,
+    required: true,
+  },
+  token: {
+    type: String,
+    required: true,
   }
 });
 
