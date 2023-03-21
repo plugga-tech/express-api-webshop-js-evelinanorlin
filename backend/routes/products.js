@@ -21,25 +21,36 @@ router.get('/:id', async function(req, res, next) {
   }
 });
 
-router.post('/add', function(req, res, next) {
+router.post('/add', async function(req, res, next) {
   try{
-    let newProduct = req.body;
-    let product = new ProductModel(
-      {
-        "name": newProduct.name,
-        "description": newProduct.description,
-        "price": newProduct.price,
-        "lager": newProduct.lager,
-        "category": newProduct.category,
-        "token": newProduct.token,
-      })
+      let products = ProductModel.find()
+      console.log(products)
+      let foundProduct = await ProductModel.findOne({"name":req.body.name})
 
-    product.save()
-
-    res.status(200).json('product added')
-
+      if(foundProduct){
+        res.status(400).json('product is already existing')
+        return
+      } else{
+        if(req.body.token === process.env.TOKEN){
+          let newProduct = req.body;
+          let product = new ProductModel(
+            {
+              "name": newProduct.name,
+              "description": newProduct.description,
+              "price": newProduct.price,
+              "lager": newProduct.lager,
+              "category": newProduct.category
+            })
+            
+          product.save()
+          res.status(200).json('product added')
+          return
+        } else{
+          res.status(401).json('wrong token')
+        }
+      }
   } catch{
-    res.status(400).json('somethibg went wrong')
+    res.status(400).json('something went wrong')
   }
 
   // SKAPA PRODUKT

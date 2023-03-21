@@ -3,11 +3,8 @@ const mongoose = require('mongoose');
 const CategoriesSchema = mongoose.Schema({
   "name": {
     type: String,
-    required: true
-  },
-  "token": {
-    type: String,
-    required: true
+    required: true,
+    unique: true
   }
 })
 

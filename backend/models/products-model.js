@@ -21,10 +21,6 @@ const ProductsSchema = mongoose.Schema({
   category: {
     type: String,
     required: true,
-  },
-  token: {
-    type: String,
-    required: true,
   }
 });
 
