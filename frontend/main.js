@@ -1,7 +1,8 @@
 const loginContainer = document.getElementById('login');
 const productsContainer = document.getElementById('products');
 const cartContainer = document.getElementById('cart');
-let productsInCart = []
+let allProducts= [];
+
 
 // funktioner för login
 
@@ -45,10 +46,13 @@ function loginFunction(){
         <button id="logoutBtn">Log out</button>`;
 
         localStorage.setItem("loggedInUser", user.email);
+        renderProducts();
 
         document.getElementById('logoutBtn').addEventListener('click', () => {
           localStorage.removeItem("loggedInUser", user.email);
           renderLogin();
+          productsContainer.innerHTML = ``;
+          cartContainer.innerHTML = ``;
         })
 
       } else{
@@ -128,25 +132,108 @@ function renderProducts(){
         <p>at the moment we have ${data.lager} ${data.name}s in stock</p>`;
       })
 
+      data.map(data => {
+        product = {
+          "name": data.name,
+          "productId": data._id,
+          "quantity": 0,
+          "price": data.price
+        }
+
+        allProducts.push(product)
+      })
       const buyBtn = document.querySelectorAll('.buyBtn');
-      
+    
       buyBtn.forEach(btn => {
         btn.addEventListener('click', (e) => {
-         let bikeToBuy = data.find(x => x._id === e.target.id);
-         productsInCart.push(bikeToBuy);
-         console.log(productsInCart);
-         renderCart()
-        })
+         let currentBike = (data.find(x => x._id === e.target.id))._id;
+
+         allProducts.map(product => {
+          if(product.productId === currentBike){
+            product.quantity += 1;
+          }
+         })
+        renderCart();
       })
     })
+  })
 }
 
 // funktioner för kundkorg
 
 function renderCart(){
-  cartContainer.innerHTML = `hello`;
+  cartContainer.innerHTML = ``;
+  let totPrice = 0;
+  allProducts.map(product => {
+    if(product.quantity > 0){
+      cartContainer.innerHTML += `
+        <h3>${product.name}</h3>
+        <p><b>Antal:</b>${product.quantity}</p>
+        <p><b>Pris: </b>${product.quantity} st á ${product.price} = ${product.quantity*product.price}</p>`
+    }
+    totPrice += product.quantity*product.price 
+  })
+  cartContainer.innerHTML += `
+  <h4>Total price: ${totPrice}</h4>
+  <button id="buyBtn">Buy now!</button>`
+
+  document.getElementById('buyBtn').addEventListener('click', sendOrder)
 }
 
+function sendOrder(){
+  let productsArr = []
 
-renderProducts()
+  allProducts.map(product => {
+    let productToArr;
+    if(product.quantity > 0){
+      productToArr = {
+        "productId": product.productId,
+        "quantity": product.quantity
+      }
+      productsArr.push(productToArr)
+    }
+  })
+
+  fetch('http://localhost:3000/api/users')
+  .then(res => res.json())
+  .then(data => {
+    let userMail = localStorage.getItem('loggedInUser');
+    let userId;
+    
+    data.map(user => {
+      if(user.email === userMail){
+        userId = user._id;
+      }
+    })
+
+    let order = {
+      "user": userId,
+      "products": productsArr
+    }
+
+    fetch('http://localhost:3000/api/orders/add', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(order)
+    })
+      .then(res => res.json())
+      .then(data => {
+        console.log(data)
+        loginContainer.innerHTML=``;
+        productsContainer.innerHTML = ``;
+        cartContainer.innerHTML = `
+        <h3>Thanks for your order, have a nice biking tour!</h3>
+        <button id="backToStartBtn">Back to startpage</button>`
+        localStorage.removeItem('loggedInUser');
+
+        document.getElementById('backToStartBtn').addEventListener('click', () => {
+          renderLogin()
+          cartContainer.innerHTML=``;
+        })
+      })
+  })
+}
+
 renderLogin()

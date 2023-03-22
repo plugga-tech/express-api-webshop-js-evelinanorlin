@@ -1,0 +1,19 @@
+.grid{
+  display: grid;
+  grid-template-areas: "login products"
+                        "cart products";
+}
+
+.login{
+  grid-area: login;
+}
+
+.cartContainer{
+  grid-area: cart;
+}
+
+.products{
+  grid-area: products;
+  max-height: 70vh;
+  overflow: scroll;
+}
