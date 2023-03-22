@@ -13,7 +13,7 @@ POST http://localhost:3000/api/users/
 Content-Type: application/json
 
 {
-  "id": "// ID PÅ EN SPECIFIK USER"
+  "id": "6418409078a1a52830094760"
 }
 
 ###
@@ -24,7 +24,7 @@ Content-Type: application/json
 
 {
   "name": "Test Testsson",
-  "email": "test@mail.com",
+  "email": "testtest@mail.comm",
   "password": "test"
 }
 
@@ -35,8 +35,8 @@ POST http://localhost:3000/api/users/login
 Content-Type: application/json
 
 {
-  "email": "// USER EMAIL",
-  "password": "// USER PASSWORD"
+  "email": "testtest@mail.com",
+  "password": "test"
 }
 
 ###
@@ -45,26 +45,60 @@ Content-Type: application/json
 // API ENDPOINTS PRODUCTS
 //
 
+# [
+#   {
+#     "_id": "6419a856d270e21373551072",
+#     "name": "fast bike",
+#     "__v": 0
+#   },
+#   {
+#     "_id": "6419a863d270e21373551075",
+#     "name": "cool bike",
+#     "__v": 0
+#   },
+#   {
+#     "_id": "6419a884d270e21373551078",
+#     "name": "old bike",
+#     "__v": 0
+#   }
+# ]
+
 # @name getProducts
 GET http://localhost:3000/api/products
 
 ###
 
 // HÄMTA SPECIFIK PRODUKT
-GET http://localhost:3000/api/products/ // ID PÅ EN SPECIFIK PRODUKT
+GET http://localhost:3000/api/products/64186250986cf02c20841c5a
 
 ###
-
+#[
+#   {
+#     "_id": "6419a856d270e21373551072",
+#     "name": "fast bike",
+#     "__v": 0
+#   },
+#   {
+#     "_id": "6419a863d270e21373551075",
+#     "name": "cool bike",
+#     "__v": 0
+#   },
+#   {
+#     "_id": "6419a884d270e21373551078",
+#     "name": "old bike",
+#     "__v": 0
+#   }
+# ]
 // SKAPA PRODUKT // UTAN TOKEN SÅ SKALL ANROPET MISSLYCKAS = 401
 POST http://localhost:3000/api/products/add
 Content-Type: application/json
 
 {
-  "name": "Produkt 2",
-  "description": "Beskrivning av produkt 1",
-  "price": 100,
-  "lager": 10,
-  "category": "// ID PÅ EN SPECIFIK KATEGORI",
+  "name": "The oldest bike",
+  "description": "from 1800",
+  "price": 300000,
+  "lager": 1,
+  "category": "6419a884d270e21373551078",
   "token": "1234key1234"
 }
 
@@ -84,7 +118,7 @@ POST http://localhost:3000/api/categories/add
 Content-Type: application/json
 
 {
-  "name": "Kategori 1",
+  "name": "old bike",
   "token": "1234key1234"
 }
 
@@ -100,12 +134,12 @@ GET http://localhost:3000/api/categories
 //
 
 // HÄMTA ALLA ORDERS, KEY MÅSTE ANGES FÖR ATT FÅ TILLGÅNG TILL ORDERS
-GET http://localhost:3000/api/orders/all/ // API TOKEN
+GET http://localhost:3000/api/orders/all/1234key1234
 
 ###
 
 // HÄMTA ALLA ORDER, FEL KEY // SKALL MISSLYCKAS
-GET http://localhost:3000/api/orders/all/ // TEST MED FEL TOKEN
+GET http://localhost:3000/api/orders/all/1234
 
 ###
 
@@ -114,15 +148,15 @@ POST http://localhost:3000/api/orders/add
 Content-Type: application/json
 
 {
-  "user": "// USER ID FÖR DEN SOM SKA SKAPA ORDERN",
+  "user": "641841d529dec95d067e9b6b",
       "products": [
     {
-      "productId": "// ETT PRODUKT ID",
+      "productId": "6419a901d270e2137355107d",
       "quantity": 1
     },
     {
-      "productId": "// ETT PRODUKT ID",
-      "quantity": 2
+      "productId": "6419a928d270e21373551081",
+      "quantity": 1
     }
   ]
 }
@@ -143,7 +177,7 @@ POST http://localhost:3000/api/orders/user
 Content-Type: application/json
 
 {
-    "user": "// USER ID FÖR DEN SOM SKA VISA ORDERS",
+    "user": "641841d529dec95d067e9b6b",
     "token": "1234key1234"
 }
 ###

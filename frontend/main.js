@@ -1,4 +1,9 @@
 const loginContainer = document.getElementById('login');
+const productsContainer = document.getElementById('products');
+const cartContainer = document.getElementById('cart');
+let productsInCart = []
+
+// funktioner för login
 
 function renderLogin(){
   loginContainer.innerHTML = `
@@ -106,6 +111,42 @@ function createNewUser(){
     })
 }
 
+// funktioner för produkter
+
+function renderProducts(){
+  productsContainer.innerHTML = `<h2>Our bikes</h2>`
+  fetch('http://localhost:3000/api/products')
+    .then(res => res.json())
+    .then(data => {
+      data.map(data => {
+        productsContainer.innerHTML += `
+        <h3>${data.name}</h3>
+        <h4>Description:</h4>
+        <p>${data.description}</p>
+        <p><b>Price:</b>${data.price} kr</p>
+        <button class="buyBtn" id="${data._id}">By this bike</button>
+        <p>at the moment we have ${data.lager} ${data.name}s in stock</p>`;
+      })
+
+      const buyBtn = document.querySelectorAll('.buyBtn');
+      
+      buyBtn.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+         let bikeToBuy = data.find(x => x._id === e.target.id);
+         productsInCart.push(bikeToBuy);
+         console.log(productsInCart);
+         renderCart()
+        })
+      })
+    })
+}
+
+// funktioner för kundkorg
+
+function renderCart(){
+  cartContainer.innerHTML = `hello`;
+}
 
 
+renderProducts()
 renderLogin()
