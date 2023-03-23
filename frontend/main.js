@@ -1,7 +1,7 @@
 // KVAR ATT GÖRA
 
 // bilder på produkter
-// Kunna se en sida med alla sina skapade orders, samt vilka produkter en order innehåller.
+// Kunna se en sida med at lla sina skapade orders, samt vilka produkter en order innehåller.
 // Inloggning samt kundvagn skall sparas i localStorage
 
 
