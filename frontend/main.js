@@ -1,3 +1,10 @@
+// KVAR ATT GÖRA
+
+// bilder på produkter
+// Kunna se en sida med alla sina skapade orders, samt vilka produkter en order innehåller.
+// Inloggning samt kundvagn skall sparas i localStorage
+
+
 const loginContainer = document.getElementById('login');
 const productsContainer = document.getElementById('products');
 const cartContainer = document.getElementById('cart');
@@ -46,11 +53,11 @@ function loginFunction(){
         <button id="logoutBtn">Log out</button>`;
 
         localStorage.setItem("loggedInUser", user.email);
-        renderProducts();
 
         document.getElementById('logoutBtn').addEventListener('click', () => {
           localStorage.removeItem("loggedInUser", user.email);
           renderLogin();
+          renderProducts();
           productsContainer.innerHTML = ``;
           cartContainer.innerHTML = ``;
         })
@@ -116,47 +123,77 @@ function createNewUser(){
 }
 
 // funktioner för produkter
+function getAllProducts(){
+  fetch('http://localhost:3000/api/products')
+            .then(res => res.json())
+            .then(data => {
+              let product;
+              data.map(data => {
+                product = {
+                  "name": data.name,
+                  "productId": data._id,
+                  "quantity": 0,
+                  "price": data.price
+                  }
+                allProducts.push(product);
+            })
+        })
+}
 
 function renderProducts(){
-  productsContainer.innerHTML = `<h2>Our bikes</h2>`
-  fetch('http://localhost:3000/api/products')
-    .then(res => res.json())
-    .then(data => {
-      data.map(data => {
-        productsContainer.innerHTML += `
-        <h3>${data.name}</h3>
-        <h4>Description:</h4>
-        <p>${data.description}</p>
-        <p><b>Price:</b>${data.price} kr</p>
-        <button class="buyBtn" id="${data._id}">By this bike</button>
-        <p>at the moment we have ${data.lager} ${data.name}s in stock</p>`;
-      })
+  fetch('http://localhost:3000/api/categories')
+  .then(res => res.json())
+  .then(data => {
+    productsContainer.innerHTML = `
+    <h2>Our bikes</h2>
+    <h3>Which bikes are you interested in?</h3>`
 
-      data.map(data => {
-        product = {
-          "name": data.name,
-          "productId": data._id,
-          "quantity": 0,
-          "price": data.price
-        }
+    data.map(category => {
+      productsContainer.innerHTML +=`
+      <button class="categoryBtn" id=${category._id}>${category.name}s</button>`
+    })
 
-        allProducts.push(product)
-      })
-      const buyBtn = document.querySelectorAll('.buyBtn');
-    
-      buyBtn.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-         let currentBike = (data.find(x => x._id === e.target.id))._id;
+    productsContainer.innerHTML += `<div id="productList"></div>`
 
-         allProducts.map(product => {
-          if(product.productId === currentBike){
-            product.quantity += 1;
-          }
-         })
-        renderCart();
+    const productsList = document.getElementById('productList')
+    const sortBtn = document.querySelectorAll('.categoryBtn');
+
+    sortBtn.forEach(sortBtn => {
+      sortBtn.addEventListener('click', (e) => {
+        fetch('http://localhost:3000/api/products')
+          .then(res => res.json())
+          .then(data => {
+            productsList.innerHTML = ``;
+            data.map(product => {
+              if(e.target.id === product.category){
+                productsList.innerHTML += `
+                <h3>${product.name}</h3>
+                <h4>Description:</h4>
+                <p>${product.description}</p>
+                <p><b>Price:</b>${product.price} kr</p>
+                <button class="buyBtn" id="${product._id}">By this bike</button>
+                <p>at the moment we have ${product.lager} ${product.name}s in stock</p>`;
+                }
+              })
+
+              const buyBtn = document.querySelectorAll('.buyBtn');
+  
+              buyBtn.forEach(btn => {
+              btn.addEventListener('click', (e) => {
+              let currentBike = (data.find(x => x._id === e.target.id))._id;
+
+              allProducts.map(product => {
+                if(product.productId === currentBike){
+                  product.quantity += 1;
+                }
+              })
+              renderCart();
+              })
+            })
+          })
+        })
       })
     })
-  })
 }
 
 // funktioner för kundkorg
@@ -181,7 +218,12 @@ function renderCart(){
 }
 
 function sendOrder(){
-  let productsArr = []
+  let loggedInUser = localStorage.getItem('loggedInUser');
+  console.log(loggedInUser)
+  if(loggedInUser){
+    let productsArr = []
+
+  /// Töm localstorage när produkt är köpt!
 
   allProducts.map(product => {
     let productToArr;
@@ -226,14 +268,21 @@ function sendOrder(){
         cartContainer.innerHTML = `
         <h3>Thanks for your order, have a nice biking tour!</h3>
         <button id="backToStartBtn">Back to startpage</button>`
-        localStorage.removeItem('loggedInUser');
 
         document.getElementById('backToStartBtn').addEventListener('click', () => {
+          localStorage.removeItem('loggedInUser');
           renderLogin()
+          renderProducts()
           cartContainer.innerHTML=``;
         })
       })
   })
+  } else{
+    alert('you must be logged in to shop!')
+  }
+  
 }
 
-renderLogin()
+renderLogin();
+renderProducts();
+getAllProducts();
