@@ -14,6 +14,7 @@ let allProducts= [];
 // funktioner för login
 
 function renderLogin(){
+  localStorage.removeItem('loggedInUser');
   loginContainer.innerHTML = `
     <h2>Log in to shop!</h2>
     <form>
@@ -50,9 +51,12 @@ function loginFunction(){
 
         loginContainer.innerHTML = `
         <h2>You are logged in, lets shop!</h2>
-        <button id="logoutBtn">Log out</button>`;
+        <button id="logoutBtn">Log out</button>
+        <button id="ordersBtn">See your orders</button>`;
 
         localStorage.setItem("loggedInUser", user.email);
+
+        document.getElementById('ordersBtn').addEventListener('click', renderOrders);
 
         document.getElementById('logoutBtn').addEventListener('click', () => {
           localStorage.removeItem("loggedInUser", user.email);
@@ -72,6 +76,37 @@ function loginFunction(){
         }
       }
     })
+}
+
+// OBS EJ KLAR! Har lista med orders, men inte renderats på någtot sätt
+function renderOrders(){
+  loginContainer.innerHTML = ``;
+
+  fetch('http://localhost:3000/api/orders/all/1234key1234')
+    .then(res => res.json())
+    .then(data => {
+      fetch('http://localhost:3000/api/users')
+        .then(res=> res.json())
+        .then(user => {
+          let currentUser = localStorage.getItem('loggedInUser');
+          let currentUserId;
+          user.map(user => {
+            if(currentUser === user.email){
+              currentUserId = user._id;
+              return
+            }
+          })
+          let orders = []
+          data.map(order => {
+            if(order.user === currentUserId){
+              orders.push(order)
+            }
+          })
+          console.log(orders)
+        })
+      
+    })
+
 }
 
 function renderCreateUser(){
