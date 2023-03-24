@@ -54,12 +54,12 @@ h2, h3, h4, p{
 
 .productsList{
   display: grid;
-  grid-template-columns: 30% 30% 30%;
+  grid-template-columns: 29% 29% 29%;
   margin-top: 20px;
 }
 
 .productsList div{
   border: 1px solid black;
-  width: 200px;
+  width: 70%;
   padding: 20px;
 }
