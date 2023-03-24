@@ -1,19 +1,17 @@
-// KVAR ATT GÖRA
-
-// bilder på produkter
-// Kunna se en sida med at lla sina skapade orders, samt vilka produkter en order innehåller.
-// Inloggning samt kundvagn skall sparas i localStorage
-
-
 const loginContainer = document.getElementById('login');
-const productsContainer = document.getElementById('products');
+const productsContainer = document.getElementById('productsContainer');
 const cartContainer = document.getElementById('cart');
 let allProducts= [];
 
-
-// funktioner för login
-
+// funktioner föt login
 function renderLogin(){
+  let loggedInUser = localStorage.getItem('loggedInUser')
+  if(loggedInUser){
+    alreadyLoggedIn()
+    renderProducts()
+    return
+  }
+
   localStorage.removeItem('loggedInUser');
   loginContainer.innerHTML = `
     <h2>Log in to shop!</h2>
@@ -60,6 +58,7 @@ function loginFunction(){
 
         document.getElementById('logoutBtn').addEventListener('click', () => {
           localStorage.removeItem("loggedInUser", user.email);
+          localStorage.removeItem('inCart');
           renderLogin();
           renderProducts();
           productsContainer.innerHTML = ``;
@@ -78,9 +77,28 @@ function loginFunction(){
     })
 }
 
-// OBS EJ KLAR! Har lista med orders, men inte renderats på någtot sätt
+function alreadyLoggedIn(){
+  loginContainer.innerHTML = `
+  <h2>You are logged in, lets shop!</h2>
+  <button id="logoutBtn">Log out</button>
+  <button id="ordersBtn">See your orders</button>`;
+
+  document.getElementById('ordersBtn').addEventListener('click', renderOrders);
+
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    localStorage.removeItem("loggedInUser");
+    renderLogin();
+    renderProducts();
+    productsContainer.innerHTML = ``;
+    cartContainer.innerHTML = ``;
+  })
+}
+
+// funktion för att se ordrar
 function renderOrders(){
   loginContainer.innerHTML = ``;
+  loginContainer.innerHTML = `
+  <h2>Your orders</h2>`;
 
   fetch('http://localhost:3000/api/orders/all/1234key1234')
     .then(res => res.json())
@@ -102,19 +120,39 @@ function renderOrders(){
               orders.push(order)
             }
           })
-          console.log(orders)
-        })
+
+          orders.map(order => {
+            let productName = []
+
+            order.products.map(product => {
+            const productMatchId = allProducts.find(prod => product.productId === prod.productId)
+            productName.push({"name": productMatchId.name, "quantity": product.quantity});
+            })
+
+            productName.map(product => {
+              loginContainer.innerHTML+= `
+              <p><b>Product:</b> ${product.name} <b>quantity:</b> ${product.quantity}</p>`;
+            })
+            loginContainer.innerHTML+= `<hr>`
+          })
+          loginContainer.innerHTML+=`<button id="backBtn">Back</button>`;
+          console.log(document.getElementById('backBtn'))
       
+          document.getElementById('backBtn').addEventListener('click', () => {
+            loginContainer.innerHTML =``;
+            alreadyLoggedIn();
+          })
+        })
     })
-
-}
-
+  }
+ 
+// Funktioner för att skapa användare
 function renderCreateUser(){
   loginContainer.innerHTML = `
   <h2>Create an account</h2>
   <form>
     <input type="text" placeholder="name" id="nameInput" required><br>
-    <input type="text" placeholder="email" id="emailInput" required><br>
+    <input type="email" placeholder="email" id="emailInput" required><br>
     <input type="password" placeholder="password" id="passwordInput" required><br>
     <button type="button" id="newUserBtn">Create account</button>
   </form>
@@ -157,22 +195,22 @@ function createNewUser(){
     })
 }
 
-// funktioner för produkter
+// funktioner för att visa och hämta produkter
 function getAllProducts(){
   fetch('http://localhost:3000/api/products')
-            .then(res => res.json())
-            .then(data => {
-              let product;
-              data.map(data => {
-                product = {
-                  "name": data.name,
-                  "productId": data._id,
-                  "quantity": 0,
-                  "price": data.price
-                  }
-                allProducts.push(product);
-            })
-        })
+    .then(res => res.json())
+    .then(data => {
+      let product;
+      data.map(data => {
+        product = {
+          "name": data.name,
+          "productId": data._id,
+          "quantity": 0,
+          "price": data.price
+          }
+        allProducts.push(product);
+      })
+    })
 }
 
 function renderProducts(){
@@ -188,7 +226,7 @@ function renderProducts(){
       <button class="categoryBtn" id=${category._id}>${category.name}s</button>`
     })
 
-    productsContainer.innerHTML += `<div id="productList"></div>`
+    productsContainer.innerHTML += `<div id="productList" class="productsList"></div>`
 
     const productsList = document.getElementById('productList')
     const sortBtn = document.querySelectorAll('.categoryBtn');
@@ -202,12 +240,15 @@ function renderProducts(){
             data.map(product => {
               if(e.target.id === product.category){
                 productsList.innerHTML += `
+                <div>
                 <h3>${product.name}</h3>
+                <img src="bicycle-solid.svg" height="100" width="100" />
                 <h4>Description:</h4>
                 <p>${product.description}</p>
                 <p><b>Price:</b>${product.price} kr</p>
-                <button class="buyBtn" id="${product._id}">By this bike</button>
-                <p>at the moment we have ${product.lager} ${product.name}s in stock</p>`;
+                <button class="buyBtn" id="${product._id}">Buy</button>
+                <p>at the moment we have ${product.lager} ${product.name}s in stock</p>
+                </div>`;
                 }
               })
 
@@ -222,7 +263,7 @@ function renderProducts(){
                   product.quantity += 1;
                 }
               })
-              renderCart();
+              productToLocalStorage();
               })
             })
           })
@@ -232,33 +273,62 @@ function renderProducts(){
 }
 
 // funktioner för kundkorg
+function productToLocalStorage(){
+  let localStorageArr = [];
+  allProducts.map(product => {
+    if (product.quantity > 0){
+      let toLocal = 
+      {"name": product.name, 
+      "productId": product.productId, 
+      "quantity": product.quantity, 
+      "price": product.price};
+
+      JSON.stringify(toLocal);
+
+      localStorageArr.push(toLocal);
+      console.log(localStorageArr);
+    }
+    localStorage.removeItem('inCart')
+    localStorage.setItem('inCart', JSON.stringify(localStorageArr));
+  })
+  renderCart();
+}
 
 function renderCart(){
   cartContainer.innerHTML = ``;
+  let productsInCart = JSON.parse(localStorage.getItem('inCart'));
+
+  if(productsInCart){
   let totPrice = 0;
-  allProducts.map(product => {
-    if(product.quantity > 0){
+  productsInCart.map(product => {
       cartContainer.innerHTML += `
         <h3>${product.name}</h3>
         <p><b>Antal:</b>${product.quantity}</p>
         <p><b>Pris: </b>${product.quantity} st á ${product.price} = ${product.quantity*product.price}</p>`
-    }
     totPrice += product.quantity*product.price 
   })
   cartContainer.innerHTML += `
   <h4>Total price: ${totPrice}</h4>
-  <button id="buyBtn">Buy now!</button>`
+  <button id="buyBtn">Buy now!</button>
+  <button id="emptyBtn">Empty your cart</button>`
 
   document.getElementById('buyBtn').addEventListener('click', sendOrder)
+  document.getElementById('emptyBtn').addEventListener('click', () => {
+    localStorage.removeItem('inCart');
+    allProducts = [];
+    getAllProducts();
+    cartContainer.innerHTML = `<p>Cart is empty</p>`
+  })
+  } else{
+    cartContainer.innerHTML = `<p>Cart is empty</p>`;
+  }
 }
 
 function sendOrder(){
   let loggedInUser = localStorage.getItem('loggedInUser');
-  console.log(loggedInUser)
+  localStorage.removeItem('inCart');
   if(loggedInUser){
     let productsArr = []
-
-  /// Töm localstorage när produkt är köpt!
 
   allProducts.map(product => {
     let productToArr;
@@ -305,7 +375,6 @@ function sendOrder(){
         <button id="backToStartBtn">Back to startpage</button>`
 
         document.getElementById('backToStartBtn').addEventListener('click', () => {
-          localStorage.removeItem('loggedInUser');
           renderLogin()
           renderProducts()
           cartContainer.innerHTML=``;
@@ -315,9 +384,9 @@ function sendOrder(){
   } else{
     alert('you must be logged in to shop!')
   }
-  
 }
 
 renderLogin();
 renderProducts();
 getAllProducts();
+renderCart();

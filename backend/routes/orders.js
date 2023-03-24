@@ -60,7 +60,6 @@ router.post('/user', async function(req, res){
   try{
     if(req.body.token === process.env.TOKEN){
       let userOrder = await OrderModel.find({"user": req.body.user});
-      console.log(userOrder)
 
       res.status(200).json(userOrder);
       return

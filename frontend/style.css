@@ -2,6 +2,38 @@
   display: grid;
   grid-template-areas: "login products"
                         "cart products";
+  grid-template-columns: 40% 60%;
+  margin: 0 auto;
+  width: 90vw;
+}
+
+button{
+  font-family: 'Roboto Mono', monospace;
+  background: transparent;
+  border: 1px solid black;
+  cursor: pointer;
+}
+
+button:hover{
+  background: black;
+  color: white;
+}
+
+input{
+  border: 1px solid black;
+  height: 20px;
+  margin-bottom: 10px;
+  font-family: 'Roboto Mono', monospace;
+}
+
+h1{
+  font-family: 'Wire One', sans-serif;
+  font-size: 5rem;
+  text-align: center;
+}
+
+h2, h3, h4, p{
+  font-family: 'Roboto Mono', monospace;
 }
 
 .login{
@@ -10,10 +42,24 @@
 
 .cartContainer{
   grid-area: cart;
+  max-height: 30vh;
+  overflow: scroll;
 }
 
-.products{
+.productsContainer{
   grid-area: products;
   max-height: 70vh;
   overflow: scroll;
+}
+
+.productsList{
+  display: grid;
+  grid-template-columns: 30% 30% 30%;
+  margin-top: 20px;
+}
+
+.productsList div{
+  border: 1px solid black;
+  width: 200px;
+  padding: 20px;
 }

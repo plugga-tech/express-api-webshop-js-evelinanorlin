@@ -14,7 +14,6 @@ router.get('/', async function(req, res, next) {
 router.get('/:id', async function(req, res, next) {
   try{
     let id = req.params.id;
-    console.log(id)
     const product = await ProductModel.findById(id);
     res.status(200).json(product);
   } catch{
@@ -56,6 +55,17 @@ router.post('/add', async function(req, res, next) {
     res.status(400).json('something went wrong')
   }
 });
+
+router.get('/category/:id', async function(req, res){
+  try{
+    const categoryId = req.params.id;
+    const products = await ProductModel.find({"category": categoryId});
+    
+    res.status(200).json(products);
+  }catch{
+    res.status(404).json('something went wrong')
+  }
+})
 
 
 
