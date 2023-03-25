@@ -5,10 +5,13 @@ var router = express.Router();
 const ProductModel = require('../models/products-model');
 const CategoryModel = require('../models/categories-model');
 
-/* GET users listing. */
 router.get('/', async function(req, res, next) {
-  const products = await ProductModel.find()
-  res.status(200).json(products);
+  try{
+    const products = await ProductModel.find()
+    res.status(200).json(products);
+  } catch{
+    res.send({message: 'error'})
+  }
 });
 
 router.get('/:id', async function(req, res, next) {
@@ -16,19 +19,19 @@ router.get('/:id', async function(req, res, next) {
     let id = req.params.id;
     const product = await ProductModel.findById(id);
     res.status(200).json(product);
-  } catch{
+  }catch{
     res.status(400).json('something went wrong');   
   }
 });
 
 router.post('/add', async function(req, res, next) {
   try{
-      let products = ProductModel.find()
       let foundProduct = await ProductModel.findOne({"name":req.body.name})
 
       if(foundProduct){
         res.status(400).json('product is already existing')
         return
+
       } else{
         if(req.body.token === process.env.TOKEN){
           let category = await CategoryModel.findById(req.body.category);
@@ -42,7 +45,11 @@ router.post('/add', async function(req, res, next) {
                 "lager": newProduct.lager,
                 "category": newProduct.category
               })
-            product.save()
+            product.save().catch(error => {
+              if (error.code === 11000){
+                return res.status(400).json({message: "product already exists"})
+              }
+            })
             res.status(200).json('product added')
             return
           }
@@ -66,7 +73,5 @@ router.get('/category/:id', async function(req, res){
     res.status(404).json('something went wrong')
   }
 })
-
-
 
 module.exports = router;

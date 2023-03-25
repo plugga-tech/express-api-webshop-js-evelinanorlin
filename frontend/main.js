@@ -12,7 +12,6 @@ function renderLogin(){
     return
   }
 
-  localStorage.removeItem('loggedInUser');
   loginContainer.innerHTML = `
     <h2>Log in to shop!</h2>
     <form>
@@ -46,25 +45,8 @@ function loginFunction(){
     .then(res => res.json())
     .then(data => {
       if(data === 'log in successfull'){
-
-        loginContainer.innerHTML = `
-        <h2>You are logged in, lets shop!</h2>
-        <button id="logoutBtn">Log out</button>
-        <button id="ordersBtn">See your orders</button>`;
-
         localStorage.setItem("loggedInUser", user.email);
-
-        document.getElementById('ordersBtn').addEventListener('click', renderOrders);
-
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-          localStorage.removeItem("loggedInUser", user.email);
-          localStorage.removeItem('inCart');
-          renderLogin();
-          renderProducts();
-          productsContainer.innerHTML = ``;
-          cartContainer.innerHTML = ``;
-        })
-
+        alreadyLoggedIn()
       } else{
         if(data === 'user not found'){
           alert('wrong email adress')
@@ -81,9 +63,13 @@ function alreadyLoggedIn(){
   loginContainer.innerHTML = `
   <h2>You are logged in, lets shop!</h2>
   <button id="logoutBtn">Log out</button>
-  <button id="ordersBtn">See your orders</button>`;
+  <button id="ordersBtn">See your orders</button>
+  <button id="addProduct">Add products</button>
+  <button id="findUser">Find a user</button>`;
 
   document.getElementById('ordersBtn').addEventListener('click', renderOrders);
+  document.getElementById('addProduct').addEventListener('click', addProduct);
+  document.getElementById('findUser').addEventListener('click', findUser);
 
   document.getElementById('logoutBtn').addEventListener('click', () => {
     localStorage.removeItem("loggedInUser");
@@ -195,7 +181,45 @@ function createNewUser(){
     })
 }
 
-// funktioner för att visa och hämta produkter
+function findUser(){
+  loginContainer.innerHTML = `
+  <h2>Find a user by Id</h2>
+  <div id="user"></div>
+  <form>
+    <input type="text" id="userId" placeholder="user ID">
+    <button type="button" id="findUserBtn">find user</button>
+  </form>
+  <button id="goBack">go back</button>`;
+
+  let input = document.getElementById('userId');
+
+  document.getElementById('goBack').addEventListener('click', renderLogin);
+  document.getElementById('findUserBtn').addEventListener('click', () => {
+    let userId = {"id": input.value};
+
+    fetch('http://localhost:3000/api/users/', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(userId)
+    })
+      .then(res => res.json())
+      .then(data => {
+        if(data === 'id not found'){
+          alert('user not found')
+        } else{
+          document.getElementById('user').innerHTML = `
+          <p><b>username:</b> ${data.name}</p>
+          <p><b>email:</b> ${data.name}</p>`
+        }
+      })
+  });
+}
+
+// funktioner för att visa, lägga till och hämta produkter
+
+
 function getAllProducts(){
   fetch('http://localhost:3000/api/products')
     .then(res => res.json())
@@ -213,6 +237,60 @@ function getAllProducts(){
     })
 }
 
+function addProduct(){
+  loginContainer.innerHTML = `
+  <h2>Add a new product</h2>
+  <h3>only for administrator</h3>
+  <form>
+    <input type="text" id="productName" placeholder="product name" required>
+    <input type="text" id="productDesc" placeholder="description" required>
+    <input type="number" id="productPrice" placeholder="price" required>
+    <input type="number" id="productLager" placeholder="amount" required>
+    <input type="text" id="productCat" placeholder="category id" required>
+    <input type="text" id="token" placeholder="API-key" required><br>
+    <button id="addProduct" type="button">Add product</button>
+  </form>
+  <button id="goBack">Go back</button>
+`;
+
+  let name = document.getElementById('productName');
+  let desc = document.getElementById('productDesc');
+  let price = document.getElementById('productPrice');
+  let lager = document.getElementById('productLager');
+  let cat = document.getElementById('productCat');
+  let token = document.getElementById('token');
+
+
+  document.getElementById('addProduct').addEventListener('click',() => {
+    let productToAdd = {
+      "name": name.value,
+      "description": desc.value,
+      "price": price.value,
+      "lager": lager.value,
+      "category": cat.value,
+      "token": token.value
+    }
+
+        fetch('http://localhost:3000/api/products/add', {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(productToAdd)
+        })
+          .then(res => res.json())
+          .then(data => {
+            if(data === 'product added'){
+              alert('product added')
+            } else{
+              alert('something went wrong');
+            }
+          })
+  })
+
+  document.getElementById('goBack').addEventListener('click', renderLogin)
+}
+
 function renderProducts(){
   fetch('http://localhost:3000/api/categories')
   .then(res => res.json())
@@ -226,7 +304,11 @@ function renderProducts(){
       <button class="categoryBtn" id=${category._id}>${category.name}s</button>`
     })
 
-    productsContainer.innerHTML += `<div id="productList" class="productsList"></div>`
+    productsContainer.innerHTML +=`<button id="findByIdBtn">Find bike by ID</button>`
+    
+    productsContainer.innerHTML += `<div id="searchProduct"></div><div id="productList" class="productsList"></div>`
+
+    document.getElementById("findByIdBtn").addEventListener('click', findBikeById);
 
     const productsList = document.getElementById('productList')
     const sortBtn = document.querySelectorAll('.categoryBtn');
@@ -271,6 +353,37 @@ function renderProducts(){
       })
     })
 }
+
+function findBikeById(){
+  document.getElementById('searchProduct').innerHTML = `
+  <h2>Search bike by id</h2>
+  <input type="text" placeholder="product id" id="idInput">
+  <button id="searchBike">Search</button>`
+
+  let idInput = document.getElementById('idInput')
+
+  document.getElementById('searchBike').addEventListener('click', () => {
+    let id = idInput.value;
+    fetch(`http://localhost:3000/api/products/${id}`)
+      .then(res => res.json())
+      .then(data => {
+        console.log(data)
+        if(data === 'something went wrong'){
+          alert('something went wrong, wrong id?')
+        } else{
+          document.getElementById('searchProduct').innerHTML = `
+          <div>
+          <h3>${data.name}</h3>
+          <img src="bicycle-solid.svg" height="100" width="100" />
+          <h4>Description:</h4>
+          <p>${data.description}</p>
+          <p><b>Price:</b>${data.price} kr</p>
+          <p>at the moment we have ${data.lager} ${data.name}s in stock</p>
+          </div>`;
+        }
+      })
+  })
+};
 
 // funktioner för kundkorg
 function productToLocalStorage(){
@@ -367,7 +480,10 @@ function sendOrder(){
     })
       .then(res => res.json())
       .then(data => {
-        console.log(data)
+        if(data = 'Out of order'){
+          alert('some of the products are sold out')
+          return
+        }
         loginContainer.innerHTML=``;
         productsContainer.innerHTML = ``;
         cartContainer.innerHTML = `

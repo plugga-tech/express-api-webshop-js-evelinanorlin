@@ -1,0 +1,8 @@
+
+ska användas
+POST http://localhost:3000/api/users/
+
+POST http://localhost:4000/api/products/add
+
+
+

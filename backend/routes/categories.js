@@ -4,8 +4,12 @@ var router = express.Router();
 const CategoriesModel = require('../models/categories-model');
 
 router.get('/', async function(req, res){
-  let categories = await CategoriesModel.find()
-  res.status(200).json(categories)
+  try{
+    let categories = await CategoriesModel.find()
+    res.status(200).json(categories)
+  } catch{
+    res.send({message: "error"})
+  }
 })
 
 router.post('/add', async function(req, res){
@@ -23,22 +27,15 @@ router.post('/add', async function(req, res){
           })
 
         category.save()
-
         res.status(200).json('category added')
+
         return
       } else{
         res.status(401).json('wrong token')
       }
     }
-} catch{
-  res.status(400).json('something went wrong')
-}
-  // SKAPA KATEGORI, KEY MÅSTE ANGES 
-  // UTAN KEY SVARA 401 
-  //Kolla upp hur token ska användas
+  }catch{
+    res.status(400).json('something went wrong')
+  }
 })
-
-
-
-
 module.exports = router;
